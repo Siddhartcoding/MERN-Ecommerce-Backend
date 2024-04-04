@@ -10,7 +10,7 @@ import ErrorHandler from "../utils/utility-class.js";
 import { rm } from "fs";
 import { myCache } from "../app.js";
 import { invalidateCache } from "../utils/features.js";
-// import { faker } from "@faker-js/faker";
+//import { faker } from "@faker-js/faker";
 
 // Revalidate on New,Update,Delete Product & on New Order
 export const getlatestProducts = TryCatch(async (req, res, next) => {
@@ -89,6 +89,7 @@ export const newProduct = TryCatch(
     if (!photo) return next(new ErrorHandler("Please add Photo", 400));
 
     if (!name || !price || !stock || !category) {
+      // deleting the product img as inviald details
       rm(photo.path, () => {
         console.log("Deleted");
       });

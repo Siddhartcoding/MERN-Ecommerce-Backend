@@ -1,7 +1,7 @@
 import express from "express";
 import { connectDB } from "./utils/features.js";
 import { errorMiddleware } from "./middlewares/error.js";
-// import NodeCache from "node-cache";
+import NodeCache from "node-cache";
 // import { config } from "dotenv";
 // import morgan from "morgan";
 // import Stripe from "stripe";
@@ -25,7 +25,7 @@ const mongoURI = process.env.MONGO_URI || "";
 connectDB();
 
 // export const stripe = new Stripe(stripeKey);
-// export const myCache = new NodeCache();
+export const myCache = new NodeCache();
 
 const app = express();
 
