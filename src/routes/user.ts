@@ -10,7 +10,7 @@ import { adminOnly } from "../middlewares/auth.js";
 const app = express.Router();
 
 // route - /api/v1/user/new
-app.post("/new", newUser);
+app.post("/new", adminOnly, newUser);
 
 // Route - /api/v1/user/all
 app.get("/all", adminOnly, getAllUsers);
