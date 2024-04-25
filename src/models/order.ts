@@ -65,7 +65,7 @@ const schema = new mongoose.Schema(
         quantity: Number,
         productId: {
           type: mongoose.Types.ObjectId,
-          ref: "Product", // collection name
+          ref: "Product",
         },
       },
     ],

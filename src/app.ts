@@ -17,7 +17,7 @@ import dashboardRoute from "./routes/stats.js";
 config({
   path: "./.env",
 });
-//console.log(process.env.PORT);
+
 const port = process.env.PORT || 4000;
 const mongoURI = process.env.MONGO_URI || "";
 const stripeKey = process.env.STRIPE_KEY || "";
