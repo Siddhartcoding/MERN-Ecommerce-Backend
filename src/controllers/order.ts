@@ -7,15 +7,17 @@ import ErrorHandler from "../utils/utility-class.js";
 import { myCache } from "../app.js";
 
 export const myOrders = TryCatch(async (req, res, next) => {
-  const { id: user } = req.query;
-
-  const key = `my-orders-${user}`;
+  const { id: userId } = req.query;
+  if (!userId) {
+    return next(new ErrorHandler("User ID is required", 400));
+  }
+  const key = `my-orders-${userId}`;
 
   let orders = [];
 
   if (myCache.has(key)) orders = JSON.parse(myCache.get(key) as string);
   else {
-    orders = await Order.find({ user });
+    orders = await Order.find({ userId });
     myCache.set(key, JSON.stringify(orders));
   }
   return res.status(200).json({
