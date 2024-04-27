@@ -1,3 +1,8 @@
+import {
+  UploadApiErrorResponse,
+  UploadApiResponse,
+  v2 as cloudinary,
+} from "cloudinary";
 import multer from "multer";
 import { v4 as uuid } from "uuid";
 
@@ -13,3 +18,21 @@ const storage = multer.diskStorage({
 });
 
 export const singleUpload = multer({ storage }).single("photo");
+
+export const uploadToCloudinary = (file: Express.Multer.File): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.upload(
+      file.path,
+      (
+        error: UploadApiErrorResponse | null,
+        result: UploadApiResponse | null
+      ) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result);
+        }
+      }
+    );
+  });
+};

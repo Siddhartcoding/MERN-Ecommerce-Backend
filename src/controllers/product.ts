@@ -11,8 +11,9 @@ import { rm } from "fs";
 import { myCache } from "../app.js";
 import { invalidateCache } from "../utils/features.js";
 // import { faker } from "@faker-js/faker";
-
+import { uploadToCloudinary } from "../middlewares/multer.js";
 // Revalidate on New,Update,Delete Product & on New Order
+
 export const getlatestProducts = TryCatch(async (req, res, next) => {
   let products;
 
@@ -92,24 +93,36 @@ export const newProduct = TryCatch(
       rm(photo.path, () => {
         console.log("Deleted");
       });
-
       return next(new ErrorHandler("Please enter All Fields", 400));
     }
 
-    await Product.create({
-      name,
-      price,
-      stock,
-      category: category.toLowerCase(),
-      photo: photo.path,
-    });
+    try {
+      // Upload the photo to Cloudinary
+      const cloudinaryResponse = await uploadToCloudinary(photo);
+      const { secure_url: photoUrl } = cloudinaryResponse as {
+        secure_url: string;
+      };
 
-    invalidateCache({ product: true, admin: true });
+      // Create the product with the Cloudinary photo URL
+      await Product.create({
+        name,
+        price,
+        stock,
+        category: category.toLowerCase(),
+        photo: photoUrl,
+      });
 
-    return res.status(201).json({
-      success: true,
-      message: "Product Created Successfully",
-    });
+      invalidateCache({ product: true, admin: true });
+
+      return res.status(201).json({
+        success: true,
+        message: "Product Created Successfully",
+      });
+    } catch (error) {
+      // Handle Cloudinary upload error
+      console.error("Error uploading to Cloudinary:", error);
+      return next(new ErrorHandler("Could not upload photo", 500));
+    }
   }
 );
 
@@ -121,30 +134,40 @@ export const updateProduct = TryCatch(async (req, res, next) => {
 
   if (!product) return next(new ErrorHandler("Product Not Found", 404));
 
-  if (photo) {
-    rm(product.photo!, () => {
-      console.log("Old Photo Deleted");
+  try {
+    if (photo) {
+      const cloudinaryResponse = await uploadToCloudinary(photo);
+      const { secure_url: photoUrl } = cloudinaryResponse as {
+        secure_url: string;
+      };
+      rm(product.photo!, () => {
+        console.log("Old Photo Deleted");
+      });
+      product.photo = photoUrl; // Update the product's photo URL
+    }
+
+    if (name) product.name = name;
+    if (price) product.price = price;
+    if (stock) product.stock = stock;
+    if (category) product.category = category;
+
+    await product.save();
+
+    invalidateCache({
+      product: true,
+      productId: String(product._id),
+      admin: true,
     });
-    product.photo = photo.path;
+
+    return res.status(200).json({
+      success: true,
+      message: "Product Updated Successfully",
+    });
+  } catch (error) {
+    // Handle Cloudinary upload error or other errors
+    console.error("Error updating product:", error);
+    return next(new ErrorHandler("Could not update product", 500));
   }
-
-  if (name) product.name = name;
-  if (price) product.price = price;
-  if (stock) product.stock = stock;
-  if (category) product.category = category;
-
-  await product.save();
-
-  invalidateCache({
-    product: true,
-    productId: String(product._id),
-    admin: true,
-  });
-
-  return res.status(200).json({
-    success: true,
-    message: "Product Updated Successfully",
-  });
 });
 
 export const deleteProduct = TryCatch(async (req, res, next) => {

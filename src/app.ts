@@ -6,7 +6,7 @@ import { config } from "dotenv";
 import morgan from "morgan";
 import Stripe from "stripe";
 import cors from "cors";
-
+import { v2 as cloudinary } from "cloudinary";
 // Importing Routes
 import userRoute from "./routes/user.js";
 import productRoute from "./routes/products.js";
@@ -16,6 +16,12 @@ import dashboardRoute from "./routes/stats.js";
 
 config({
   path: "./.env",
+});
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
 const port = process.env.PORT || 4000;
